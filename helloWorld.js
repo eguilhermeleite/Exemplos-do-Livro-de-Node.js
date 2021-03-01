@@ -1,29 +1,36 @@
 const http = require("http");
+const fs = require("fs");
 const port = process.env.PORT || 3000;
 
+function serveStaticFile(res, path, contentType, responseCode = 200){
+  fs.readFile(__dirname + path, (err, data)=>{
+    if(err){
+      res.writeHead(500,{'Content-Type': 'text/plain'});
+      return res.end('500 - Internal Error');
+    }
+    res.writeHead(responseCode,{'Content-Type': contentType});
+    res.end(data);
+  });
+}
 
 const server = http.createServer((req, res) => {
   // remover queryString e barra final com conteúdo lowerCase
   const path = req.url.replace(/\/?(?:\?.*)?$/, '').toLowerCase();
-  switch(path){
-      case '':
-          res.writeHead(200,{"Content-type": "text/html"});
-          res.end("Homepage");
+  switch (path) {
+    case '':
+      serveStaticFile(res, '/public/home.html','text/html');
       break;
 
-      case '/about':
-          res.writeHead(200,{"Content-type": "text/html"});
-          res.end("About");
+    case '/about':
+      serveStaticFile(res, '/public/about.html','text/html');
       break;
 
-      default:
-        res.writeHead(404,{"Content-type": "text/html"});
-        res.end("Not Found");
-    break;
-    
+    default:
+      serveStaticFile(res, '/public/404.html','text/html',404);
+      break;
   }
 });
 
 server.listen(port, () => {
-    console.log(`Servidor funcionando na porta ${port}. Pressione ctrl + c para terminar...`);
+  console.log(`Servidor funcionando na porta ${port}. Pressione ctrl + c para terminar...`);
 });
